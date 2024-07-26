@@ -1,0 +1,21 @@
+services:
+
+  producer:
+    build: ./producer
+    container_name: producer
+    #depends_on:
+      #logstash:
+      #  condition: service_healthy
+    env_file:
+      - .env
+    networks:
+      - tap
+
+networks:
+    tap:
+        name: tap
+        driver: bridge
+        ipam: 
+            config:
+                 - subnet: 10.0.100.1/24
+        external: true
