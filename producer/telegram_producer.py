@@ -5,15 +5,14 @@ load_dotenv(dotenv_path)
 MY_TOKEN = os.environ.get("MY_TOKEN")
 
 import logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
+logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
+import requests
 from telegram import Update
 from telegram.ext import MessageHandler, Application, ContextTypes
-
+LOGSTASH_URL = "http://logstash:9700"
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.message
@@ -30,7 +29,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "timestamp": msg.date.timestamp()
         }
     
-    print(msg_to_logstash)
+    requests.post(LOGSTASH_URL, json=msg_to_logstash, timeout=5)
     logger.info(f"Message received: {msg_to_logstash}")
 
 def main() -> None:

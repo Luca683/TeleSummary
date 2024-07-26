@@ -3,13 +3,34 @@ services:
   producer:
     build: ./producer
     container_name: producer
-    #depends_on:
-      #logstash:
-      #  condition: service_healthy
+    depends_on:
+      logstash:
+        condition: service_healthy
     env_file:
       - .env
     networks:
-      - tap
+      tap:
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.4
+    container_name: logstash
+    volumes:
+      - ./logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/data:/usr/share/logstash/data
+    ports:
+      - "9700:9700"
+    expose:
+      - "9700"
+    environment:
+      - XPACK_MONITORING_ENABLED=false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9700"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+    networks:
+      tap:
 
 networks:
     tap:
