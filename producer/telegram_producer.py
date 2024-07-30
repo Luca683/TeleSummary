@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 import requests
 from telegram import Update
 from telegram.ext import MessageHandler, Application, ContextTypes
-LOGSTASH_URL = "http://logstash:9700"
+FLUENTD_URL = "http://10.0.100.21:9700"
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.message
@@ -29,7 +29,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "timestamp": msg.date.timestamp()
         }
     
-    requests.post(LOGSTASH_URL, json=msg_to_logstash, timeout=5)
+    requests.post(FLUENTD_URL, json=msg_to_logstash, timeout=5)
     logger.info(f"Message received: {msg_to_logstash}")
 
 def main() -> None:

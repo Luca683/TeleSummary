@@ -4,33 +4,27 @@ services:
     build: ./producer
     container_name: producer
     depends_on:
-      logstash:
-        condition: service_healthy
+      - fluentd
     env_file:
       - .env
     networks:
       tap:
 
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.13.4
-    container_name: logstash
+  fluentd:
+    build: ./fluentd
+    container_name: fluentd
+    #depends_on:
+    #  - kafka_broker
     volumes:
-      - ./logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ./logstash/data:/usr/share/logstash/data
-    ports:
-      - "9700:9700"
-    expose:
-      - "9700"
-    environment:
-      - XPACK_MONITORING_ENABLED=false
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9700"]
-      interval: 30s
-      retries: 3
-      start_period: 10s
-      timeout: 10s
+      - ./fluentd/conf:/fluentd/etc/
+    restart: always
+    command: >
+             bash -c 'fluentd -c /fluentd/etc/fluentd.conf'
+    mem_limit: 512m
     networks:
       tap:
+        ipv4_address: 10.0.100.21
+  
 
 networks:
     tap:
