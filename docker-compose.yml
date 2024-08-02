@@ -13,8 +13,8 @@ services:
   fluentd:
     build: ./fluentd
     container_name: fluentd
-    #depends_on:
-    #  - kafka_broker
+    depends_on:
+      - kafka_broker
     volumes:
       - ./fluentd/conf:/fluentd/etc/
     restart: always
@@ -25,6 +25,61 @@ services:
       tap:
         ipv4_address: 10.0.100.21
   
+  kafka_zookeeper:
+    build: ./kafka
+    container_name: kafka_zookeeper
+    ports:
+      - 2181:2181
+    command: > 
+      bash -c "set -v
+               mkdir -p /tmp/zookeeper
+               cd /opt/kafka
+               zookeeper-server-start.sh config/zookeeper.properties"
+    networks:
+      tap:
+        ipv4_address: 10.0.100.22
+
+  
+  kafka_broker:
+    build: ./kafka
+    container_name: kafka_broker
+    depends_on:
+      - kafka_zookeeper
+    ports:
+      - 9092:9092
+    command: > 
+      bash -c "set -v
+               cd /opt/kafka
+               kafka-server-start.sh config/server.properties"
+    networks:
+      tap:
+        ipv4_address: 10.0.100.23
+
+
+  telegram_msg_topic:
+    build: ./kafka
+    container_name: telegram_msg_topic
+    command: > 
+      bash -c "set -v
+               cd /opt/kafka
+               kafka-topics.sh --bootstrap-server 10.0.100.23:9092 --list
+               kafka-topics.sh --create --bootstrap-server 10.0.100.23:9092 --replication-factor 1 --partitions 1 --topic msg_telegram
+               kafka-topics.sh --bootstrap-server 10.0.100.23:9092 --list"
+    depends_on: 
+        - kafka_broker
+    networks:
+      tap:
+
+  kafka_ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    container_name: kafkaUI
+    environment:
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=10.0.100.23:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=10.0.100.22:2181
+    ports:
+      - "8080:8080"
+    networks:
+      tap:
 
 networks:
     tap:
