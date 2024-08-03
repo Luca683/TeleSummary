@@ -80,6 +80,18 @@ services:
       - "8080:8080"
     networks:
       tap:
+  
+  spark:
+    build: ./spark
+    container_name: spark
+    ports:
+      - 4040:4040
+    depends_on:
+      - producer
+      #- elasticsearch
+    networks:
+        tap:
+    mem_limit: 6g
 
 networks:
     tap:
