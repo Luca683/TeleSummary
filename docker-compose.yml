@@ -84,6 +84,8 @@ services:
   spark:
     build: ./spark
     container_name: spark
+    volumes:
+      - C:\Users\stran\OneDrive\Desktop\TeleTranslate\spark:/TeleTranslate/spark
     ports:
       - 4040:4040
     depends_on:
@@ -92,6 +94,9 @@ services:
     networks:
         tap:
     mem_limit: 6g
+    environment:
+      - SPARK_DRIVER_MEMORY=3g
+      - SPARK_EXECUTOR_MEMORY=3g
 
 networks:
     tap:
