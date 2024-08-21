@@ -16,6 +16,9 @@ spark = SparkSession.builder \
 tokenizer = T5Tokenizer.from_pretrained('t5-small')
 model = T5ForConditionalGeneration.from_pretrained('t5-small')
 
+#tokenizer = T5Tokenizer.from_pretrained('PRAli22/t5-base-text-summarizer')
+#model = T5ForConditionalGeneration.from_pretrained('PRAli22/t5-base-text-summarizer')
+
 def riassumi_testo(testo):
     # Prepara l'input per il modello T5
     if not testo:
@@ -29,7 +32,7 @@ def riassumi_testo(testo):
         summary_ids = model.generate(
             input_ids,
             max_length=150,
-            min_length=50,
+            min_length=10,
             length_penalty=2.0,
             num_beams=4,
             early_stopping=True
@@ -48,7 +51,7 @@ def write_batch_to_text(df, epoch_id):
     pandas_df = df.toPandas()
     
     # Aggiunta in file di testo
-    with open("/TeleTranslate/spark/text_output.txt", "a") as f:
+    with open("/TeleSummary/spark/text_output.txt", "a") as f:
         for _, row in pandas_df.iterrows():
             line = f"id_message: {row['id_message']}, text: {row['text']}, sender: {row['sender']}, chat: {row['chat']}, id_chat: {row['id_chat']}, timestamp: {row['timestamp']}, Summary: {row['Summary']}\n"
             f.write(line)

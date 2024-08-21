@@ -85,12 +85,12 @@ services:
     build: ./spark
     container_name: spark
     volumes:
-      - C:\Users\stran\OneDrive\Desktop\TeleTranslate\spark:/TeleTranslate/spark
+      - C:\Users\stran\OneDrive\Desktop\TeleSummary\spark:/TeleSummary/spark
     ports:
       - 4040:4040
     depends_on:
       - producer
-      #- elasticsearch
+      - elasticsearch
     networks:
         tap:
     mem_limit: 6g
@@ -98,11 +98,24 @@ services:
       - SPARK_DRIVER_MEMORY=3g
       - SPARK_EXECUTOR_MEMORY=3g
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+    container_name: elasticsearch
+    ports:
+      - 9200:9200
+    networks:
+      tap:
+        ipv4_address: 10.0.100.25
+
 networks:
     tap:
         name: tap
         driver: bridge
         ipam: 
             config:
-                 - subnet: 10.0.100.1/24
+                 - subnet: 10.0.100.0/24
         external: true
