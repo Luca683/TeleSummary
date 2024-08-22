@@ -164,3 +164,4 @@ cython_debug/
 kafka/setup
 spark/setup
 spark/text_output.txt
+spark/spark_translate_backup.py

@@ -91,6 +91,8 @@ services:
     depends_on:
       - producer
       - elasticsearch
+    env_file:
+      - .env
     networks:
         tap:
     mem_limit: 6g

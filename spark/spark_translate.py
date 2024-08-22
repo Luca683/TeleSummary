@@ -1,16 +1,24 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
+from pyspark.conf import SparkConf
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 import torch
 
 kafka_broker = "10.0.100.23:9092"
+elastic_node = "http://10.0.100.25:9200/"
+elastic_index = "messages"
 input_topic = "msg_telegram"
+
+sparkConf = SparkConf().set("es.nodes", "elasticsearch").set("es.port", "9200")
 
 # Inizializza la SparkSession con supporto per Kafka
 spark = SparkSession.builder \
-    .appName("RiassuntoTestoKafkaStreaming") \
+    .appName("TeleSummary") \
+    .config(conf=sparkConf) \
     .getOrCreate()
+
+#spark.sparkContext.setLogLevel("ERROR")
 
 # Carica il tokenizer e il modello T5 pre-addestrato per il riassunto
 tokenizer = T5Tokenizer.from_pretrained('t5-small')
@@ -85,7 +93,17 @@ messages_df = kafka_stream.selectExpr("CAST(value AS STRING)") \
 # Applica la funzione di riassunto
 df_riassunto = messages_df.withColumn("Summary", riassumi_udf(messages_df["text"]))
 
-# Stampa il DataFrame in tempo reale
+#Mando dati ad elasticsearch
+query_es = df_riassunto.writeStream \
+    .format("org.elasticsearch.spark.sql") \
+    .option("checkpointLocation", "/tmp/es_checkpoint") \
+    .option("es.resource", f"{elastic_index}") \
+    .option("es.nodes", elastic_node) \
+    .option("es.index.auto.create", "true") \
+    .option("es.nodes.wan.only", "true") \
+    .start()
+
+# Stampa il DataFrame su console in tempo reale
 query_console = df_riassunto.writeStream \
     .outputMode("append") \
     .format("console") \
@@ -98,4 +116,5 @@ query_text = df_riassunto.writeStream \
     .start()
 
 # Attendi il termine del processo di streaming
+query_es.awaitTermination()
 query_console.awaitTermination()
