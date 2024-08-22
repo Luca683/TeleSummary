@@ -1,0 +1,4 @@
+python-telegram-bot==21.1.1
+requests
+elasticsearch==8.13.2
+python-dotenv

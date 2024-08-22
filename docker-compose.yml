@@ -113,6 +113,17 @@ services:
       tap:
         ipv4_address: 10.0.100.25
 
+  telegram_bot_response:
+    build: ./telegram_bot_response
+    container_name: telegram_bot_response
+    depends_on:
+      - elasticsearch
+    env_file:
+      - .env
+    networks:
+      tap:
+
+
 networks:
     tap:
         name: tap
