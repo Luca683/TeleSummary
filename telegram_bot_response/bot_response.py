@@ -16,7 +16,7 @@ es = Elasticsearch(hosts=elastic_node)
 
 async def send_summary():
     application = Application.builder().token(MY_TOKEN).build()
-    last_timestamp = 0
+    last_timestamp = "1970-01-01T00:00:00.000Z"
 
     while True:
         try:
@@ -36,7 +36,10 @@ async def send_summary():
 
             for hit in response['hits']['hits']:
                 message_summary = hit['_source']['Summary']
-                await application.bot.send_message(chat_id=hit["_source"]["id_chat"], reply_to_message_id=hit["_source"]["id_message"], text=message_summary)
+                await application.bot.send_message(
+                    chat_id=hit["_source"]["id_chat"],
+                    reply_to_message_id=hit["_source"]["id_message"], 
+                    text=message_summary)
                 last_timestamp = hit['_source']['timestamp']  # Aggiorna l'ultimo timestamp
 
             time.sleep(5)

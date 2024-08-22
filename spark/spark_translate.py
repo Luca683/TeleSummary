@@ -18,6 +18,7 @@ spark = SparkSession.builder \
     .config(conf=sparkConf) \
     .getOrCreate()
 
+spark.conf.set("spark.sql.session.timeZone", "Europe/Rome")
 #spark.sparkContext.setLogLevel("ERROR")
 
 # Carica il tokenizer e il modello T5 pre-addestrato per il riassunto
@@ -91,7 +92,8 @@ messages_df = kafka_stream.selectExpr("CAST(value AS STRING)") \
         .select("messages_df.*")
 
 # Applica la funzione di riassunto
-df_riassunto = messages_df.withColumn("Summary", riassumi_udf(messages_df["text"]))
+df_riassunto = messages_df.withColumn("Summary", riassumi_udf(messages_df["text"])) \
+        .withColumn("timestamp", date_format(from_unixtime(col("timestamp")), "yyyy-MM-dd'T'HH:mm:ss.SSSX"))
 
 #Mando dati ad elasticsearch
 query_es = df_riassunto.writeStream \
