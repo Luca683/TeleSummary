@@ -24,7 +24,8 @@ mapping = {
                     "keyword": {
                         "type": "keyword"
                     }
-                }
+                },
+                "fielddata": True
             },
             "Summary": {
                 "type": "text",
@@ -32,7 +33,8 @@ mapping = {
                     "keyword": {
                         "type": "keyword"
                     }
-                }
+                },
+                "fielddata": True
             },
             "id_message": {
                 "type": "integer"
