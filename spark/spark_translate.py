@@ -3,12 +3,67 @@ from pyspark.sql.functions import *
 from pyspark.sql.types import *
 from pyspark.conf import SparkConf
 from transformers import T5Tokenizer, T5ForConditionalGeneration
+from elasticsearch import Elasticsearch
 import torch
 
 kafka_broker = "10.0.100.23:9092"
 elastic_node = "http://10.0.100.25:9200/"
 elastic_index = "messages"
 input_topic = "msg_telegram"
+
+####################################################
+es = Elasticsearch(hosts=elastic_node)
+
+# Definisci il mapping
+mapping = {
+    "mappings": {
+        "properties": {
+            "text": {
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
+            },
+            "Summary": {
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
+            },
+            "id_message": {
+                "type": "integer"
+            },
+            "sender": {
+                "properties": {
+                    "username": {
+                        "type": "keyword"
+                    },
+                    "id_sender": {
+                        "type": "long"
+                    }
+                }
+            },
+            "chat": {
+                "type": "keyword"
+            },
+            "id_chat": {
+                "type": "long"
+            },
+            "timestamp": {
+                "type": "date"
+            }
+        }
+    }
+}
+
+# Crea l'indice se non esiste
+if not es.indices.exists(index=elastic_index):
+    es.indices.create(index=elastic_index, body=mapping)
+####################################################
 
 sparkConf = SparkConf().set("es.nodes", "elasticsearch").set("es.port", "9200")
 
