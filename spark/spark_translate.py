@@ -16,10 +16,31 @@ es = Elasticsearch(hosts=elastic_node)
 
 # Definisci il mapping
 mapping = {
+    "settings": {
+        "analysis": {
+            "filter": {
+                "english_stop": {
+                    "type": "stop",
+                    "stopwords": "_english_"  
+                }
+            },
+            "analyzer": {
+                "custom_english": {
+                    "type": "custom",
+                    "tokenizer": "standard",
+                    "filter": [
+                        "lowercase",
+                        "english_stop"
+                    ]
+                }
+            }
+        }
+    },
     "mappings": {
         "properties": {
             "text": {
                 "type": "text",
+                "analyzer": "custom_english",
                 "fields": {
                     "keyword": {
                         "type": "keyword"
@@ -29,6 +50,7 @@ mapping = {
             },
             "Summary": {
                 "type": "text",
+                "analyzer": "custom_english",
                 "fields": {
                     "keyword": {
                         "type": "keyword"
@@ -57,6 +79,12 @@ mapping = {
             },
             "timestamp": {
                 "type": "date"
+            },
+            "text_length": {
+                "type": "integer"
+            },
+            "summary_length": {
+                "type": "integer"
             }
         }
     }
@@ -150,7 +178,9 @@ messages_df = kafka_stream.selectExpr("CAST(value AS STRING)") \
 
 # Applica la funzione di riassunto
 df_riassunto = messages_df.withColumn("Summary", riassumi_udf(messages_df["text"])) \
-        .withColumn("timestamp", date_format(from_unixtime(col("timestamp")), "yyyy-MM-dd'T'HH:mm:ss.SSSX"))
+        .withColumn("timestamp", date_format(from_unixtime(col("timestamp")), "yyyy-MM-dd'T'HH:mm:ss.SSSX")) \
+        .withColumn("text_length", length(col("text"))) \
+        .withColumn("summary_length", length(col("Summary")))
 
 #Mando dati ad elasticsearch
 query_es = df_riassunto.writeStream \
