@@ -96,6 +96,7 @@ services:
     networks:
         tap:
     mem_limit: 6g
+    restart: on-failure
     environment:
       - SPARK_DRIVER_MEMORY=3g
       - SPARK_EXECUTOR_MEMORY=3g
