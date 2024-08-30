@@ -61,7 +61,7 @@ $ docker compose up
 
 ### Results
 
-After setup the environment let's jump into the core of GSA. Here is services ip table:
+Here is services IP table:
 
 | Container     | URL                                        | Description                                     |
 | ------------- | ------------------------------------------ | ----------------------------------------------- |
